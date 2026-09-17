@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNO Mercy: English Battle Royale</title>
+    <style>
+        :root {
+            --blue: #005A9C;
+            --red: #D32F2F;
+            --yellow: #FBC02D;
+            --green: #388E3C;
+            --dark: #1e1e1e;
+            --card-bg: #2d2d2d;
+            --light: #f5f5f5;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 5px;
+            color: #fff;
+        }
+
+        h3 {
+            text-align: center;
+            color: #aaa;
+            margin-top: 0;
+        }
+
+        /* SETUP SECTION */
+        #setup-section {
+            max-width: 800px;
+            margin: 20px auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .setup-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+            background: #111;
+            color: #fff;
+            box-sizing: border-box;
+            font-family: inherit;
+            font-size: 15px;
+        }
+
+        textarea {
+            resize: vertical;
+            height: 100px;
+        }
+
+        button {
+            background-color: var(--yellow);
+            color: var(--dark);
+            border: none;
+            padding: 12px 24px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            filter: brightness(1.15);
+            transform: translateY(-1px);
+        }
+
+        .team-setup-card {
+            background: #383838;
+            padding: 18px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+        }
+
+        /* GAME SECTION */
+        #game-section {
+            display: none;
+            height: 90vh;
+            position: relative;
+        }
+
+        #teams-container {
+            display: flex;
+            justify-content: space-around;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        .team-card {
+            background: var(--card-bg);
+            flex: 1;
+            text-align: center;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            border-top: 5px solid var(--yellow);
+            transition: background-color 0.2s, transform 0.2s;
+        }
+
+        @keyframes steveDamage {
+            0% {
+                transform: scale(1);
+                filter: drop-shadow(0 0 0px transparent);
+            }
+
+            20% {
+                transform: scale(0.96) translateX(-4px);
+                background: #5a1a1a;
+                filter: drop-shadow(0 0 12px #ff3333);
+            }
+
+            40% {
+                transform: scale(1.02) translateX(4px);
+                background: #6b1e1e;
+                filter: drop-shadow(0 0 15px #ff2222);
+            }
+
+            60% {
+                transform: scale(0.98) translateX(-2px);
+                background: #4a1515;
+            }
+
+            100% {
+                transform: scale(1) translateX(0);
+                background: var(--card-bg);
+                filter: none;
+            }
+        }
+
+        .team-card.damage-hit {
+            animation: steveDamage 0.38s ease-in-out;
+        }
+
+        .team-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #fff;
+        }
+
+        .hearts {
+            font-size: 24px;
+            cursor: pointer;
+            user-select: none;
+            margin-bottom: 8px;
+            letter-spacing: 4px;
+        }
+
+        .current-player {
+            font-size: 16px;
+            color: var(--yellow);
+            font-weight: bold;
+            background: #222;
+            padding: 6px 10px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+
+        #center-board {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #262626;
+            padding: 25px;
+            border-radius: 12px;
+            max-width: 900px;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .combo-selector {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .combo-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #333;
+            min-width: 160px;
+        }
+
+        .combo-title {
+            font-weight: bold;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .combo-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .combo-btn {
+            padding: 4px 14px;
+            font-size: 18px;
+            border-radius: 5px;
+            background: #555;
+            color: white;
+        }
+
+        .combo-count {
+            font-size: 22px;
+            font-weight: bold;
+            width: 25px;
+            text-align: center;
+            color: var(--yellow);
+        }
+
+        #btn-generate {
+            background: #fff;
+            color: #000;
+            padding: 14px 40px;
+            font-size: 19px;
+            border-radius: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+        #roulette-area {
+            text-align: center;
+            min-height: 110px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .word-display {
+            background: #fff;
+            color: #000;
+            padding: 15px 25px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 8px;
+            min-width: 140px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* FLOATING BUTTONS */
+        #rules-btn {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background-color: #0288d1;
+            color: #fff;
+            padding: 14px 24px;
+            font-size: 16px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        #next-round-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #fff;
+            color: var(--dark);
+            padding: 14px 28px;
+            font-size: 16px;
+            border-radius: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        /* MODAL STYLES */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            overflow-y: auto;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-content {
+            background-color: #2b2b2b;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 850px;
+            color: #e0e0e0;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.8);
+            line-height: 1.6;
+            position: relative;
+        }
+
+        .close-modal {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-modal:hover {
+            color: #fff;
+        }
+
+        .rule-section {
+            margin-bottom: 25px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 15px;
+        }
+
+        .rule-section h3 {
+            text-align: left;
+            color: var(--yellow);
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .rule-badge {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 13px;
+            font-weight: bold;
+            color: white;
+            margin-right: 5px;
+        }
+
+        .bg-blue {
+            background-color: var(--blue);
+        }
+
+        .bg-red {
+            background-color: var(--red);
+        }
+
+        .bg-yellow {
+            background-color: var(--yellow);
+            color: black;
+        }
+
+        .bg-green {
+            background-color: var(--green);
+        }
+
+        .rule-list {
+            padding-left: 20px;
+            margin-top: 5px;
+        }
+
+        .rule-list li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>UNO Mercy: English Battle Royale ⚔️🇬🇧</h1>
+    <h3 id="subtitle">Setup Your Game</h3>
+
+    <!-- SETUP SECTION -->
+    <div id="setup-section">
+        <div id="step-1">
+            <div class="setup-group">
+                <label>¿Cuántos equipos participarán?</label>
+                <input type="number" id="num-teams" min="2" max="6" value="4">
+            </div>
+            <button onclick="generateTeamInputs()">Siguiente</button>
+        </div>
+        <div id="step-2" style="display: none;">
+            <div id="team-inputs-container"></div>
+            <button onclick="startGame()"
+                style="width: 100%; margin-top: 10px; background: var(--green); color: white;">¡INICIAR
+                PARTIDA!</button>
+        </div>
+    </div>
+
+    <!-- GAME SECTION -->
+    <div id="game-section">
+        <div id="teams-container"></div>
+
+        <div id="center-board">
+            <h2 style="margin-top:0;">Configurador de Ataque Múltiple</h2>
+
+            <div class="combo-selector">
+                <div class="combo-item" style="border-bottom: 5px solid var(--blue);">
+                    <span class="combo-title" style="color: #64b5f6;">Azul (Comparativos)</span>
+                    <div class="combo-controls">
+                        <button class="combo-btn" onclick="updateCount('blue', -1)">-</button>
+                        <span class="combo-count" id="count-blue">0</span>
+                        <button class="combo-btn" onclick="updateCount('blue', 1)">+</button>
+                    </div>
+                </div>
+                <div class="combo-item" style="border-bottom: 5px solid var(--red);">
+                    <span class="combo-title" style="color: #e57373;">Rojo (Superlativos)</span>
+                    <div class="combo-controls">
+                        <button class="combo-btn" onclick="updateCount('red', -1)">-</button>
+                        <span class="combo-count" id="count-red">0</span>
+                        <button class="combo-btn" onclick="updateCount('red', 1)">+</button>
+                    </div>
+                </div>
+                <div class="combo-item" style="border-bottom: 5px solid var(--yellow);">
+                    <span class="combo-title" style="color: #fff176;">Amarillo (Verbos)</span>
+                    <div class="combo-controls">
+                        <button class="combo-btn" onclick="updateCount('yellow', -1)">-</button>
+                        <span class="combo-count" id="count-yellow">0</span>
+                        <button class="combo-btn" onclick="updateCount('yellow', 1)">+</button>
+                    </div>
+                </div>
+                <div class="combo-item" style="border-bottom: 5px solid var(--green);">
+                    <span class="combo-title" style="color: #81c784;">Verde (Conectores)</span>
+                    <div class="combo-controls">
+                        <button class="combo-btn" onclick="updateCount('green', -1)">-</button>
+                        <span class="combo-count" id="count-green">0</span>
+                        <button class="combo-btn" onclick="updateCount('green', 1)">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <button id="btn-generate" onclick="spinComboRoulette()">🎲 Generar Palabras</button>
+            <div id="roulette-area"></div>
+        </div>
+
+        <button id="rules-btn" onclick="openRules()">📜 Reglas del Juego</button>
+        <button id="next-round-btn" onclick="nextRound()">Siguiente Ronda 🔄</button>
+    </div>
+
+    <!-- RULES MODAL -->
+    <div id="rules-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeRules()">&times;</span>
+            <h2 style="color: var(--yellow); text-align: center; margin-top: 0;">📜 Reglamento Oficial: UNO Mercy -
+                English Battle Royale</h2>
+
+            <div class="rule-section">
+                <h3>🏆 1. Objetivo del Juego y Condiciones de Victoria</h3>
+                <p>El juego presenta ahora dos vías para que un equipo se proclame como el <strong>Ganador de la
+                        Batalla</strong>:</p>
+                <ul class="rule-list">
+                    <li><strong>Supervivencia (Battle Royale):</strong> Reducir a 0 los puntos de vida (HP) de todos los
+                        equipos rivales. El último equipo que conserve vidas gana.</li>
+                    <li><strong>Victoria Clásica (UNO):</strong> Ser el primer equipo en quedarse sin cartas en la mano.
+                        <em>Regla estricta:</em> Al tener una sola carta, el equipo debe anunciar "¡UNO!". Además,
+                        <strong>no está permitido ganar lanzando una carta negra</strong> (Efecto Grupal o Sumatoria sin
+                        Color) como jugada final.
+
+                        NOTA: Cuando a un equipo le quede solo una carta en mano, queda expuesto a que cualquier
+                        integrante de los otros equipos grite "¡UNO!". Si lo logra decir primero
+                        <strong>antes de que el equipo con una carta lo haga</strong>, el equipo que tenía una carta
+                        deberá comer dos cartas de la baraja.
+                    </li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>🎴 2. Inicio y Preparación de la Partida</h3>
+                <ul class="rule-list">
+                    <li><strong>Mano Inicial:</strong> Cada equipo recibe <strong>14 cartas</strong>, entregadas al
+                        representante principal de cada grupo.</li>
+                    <li><strong>Selección de Turno Inicial:</strong> Se baraja el mazo y cada representante roba una
+                        carta. El representante que saque la carta de <strong>mayor valor numérico</strong> iniciará la
+                        partida. El juego continúa en el sentido de las manecillas del reloj.</li>
+                    <li><strong>Robo por Turno:</strong> En cada turno, el equipo debe tomar 1 carta del mazo para
+                        mantener activa su mano.</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>👥 3. Representantes y Trabajo en Equipo</h3>
+                <ul class="rule-list">
+                    <li><strong>El Representante Activo:</strong> Un estudiante de la lista actúa como el representante
+                        de su grupo. Este integrante es el único encargado de recibir el ataque, responder el desafío en
+                        voz alta y defender las vidas de su equipo.</li>
+                    <li><strong>Fase de Estrategia Grupal:</strong> Aunque solo el representante responde verbalmente,
+                        todo el equipo puede dialogar y aconsejar comunitariamente qué carta lanzar y cómo estructurar
+                        la respuesta durante los 15 segundos previos.</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>🎨 4. Categorías Gramaticales por Color</h3>
+                <ul class="rule-list">
+                    <li><span class="rule-badge bg-blue">AZUL</span> <strong>Adjetivos Comparativos:</strong> (ej.
+                        <em>faster, taller, more expensive</em>).
+                    </li>
+                    <li><span class="rule-badge bg-red">ROJO</span> <strong>Adjetivos Superlativos:</strong> (ej.
+                        <em>the fastest, the tallest, the most expensive</em>).
+                    </li>
+                    <li><span class="rule-badge bg-yellow">AMARILLO</span> <strong>Verbos de Acción / Tiempos
+                            Verbales:</strong> (ej. <em>bought, swimming, travel</em>).</li>
+                    <li><span class="rule-badge bg-green">VERDE</span> <strong>Conectores y Adverbios:</strong> (ej.
+                        <em>because, however, always</em>).
+                    </li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>⚔️ 5. Ataque Básico y Efecto del Número 0</h3>
+                <p>Las cartas numéricas generan palabras del tema correspondiente en la pantalla. El representante del
+                    equipo objetivo debe <strong>formular una oración (afirmativa o negativa) en inglés</strong>
+                    utilizando la palabra generada. <em>Nota: No está permitido responder con preguntas.</em></p>
+                <ul class="rule-list">
+                    <li>✅ <strong>Respuesta Correcta:</strong> Defiende el punto y el equipo no pierde vida (0 HP).</li>
+                    <li>❌ <strong>Fallo o Tiempo Agotado:</strong> El equipo pierde 1 punto de vida (-1 HP).</li>
+                    <li>🔄 <strong>Efecto Especial del Cero (Rotación):</strong> Al jugarse cualquier carta con el
+                        <strong>número 0</strong>, además del reto verbal habitual, <strong>todos los equipos deben
+                            rotar inmediatamente a su representante</strong>. El rol pasa automáticamente al siguiente
+                        estudiante en la lista de cada grupo. ¡Esta es la única forma de cambiar de representante en el
+                        juego!
+                    </li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>🃏 6. Jugadas Combinadas (Combos Libres)</h3>
+                <p>Para acelerar el juego y ampliar la estrategia, los equipos pueden lanzar más de 1 carta en un mismo
+                    turno <strong>sin necesidad de usar una carta especial</strong>.</p>
+                <ul class="rule-list">
+                    <li>La jugada inicial debe coincidir en color o número con la carta en la mesa.</li>
+                    <li>Las cartas adicionales que se lancen en ese mismo turno deben formar obligatoriamente una
+                        <strong>escalera del mismo color</strong> o <strong>pares/múltiplos del mismo número</strong> en
+                        diferentes colores.
+                    </li>
+                    <li>Esto obliga al representante del equipo objetivo a construir <strong>una sola oración completa y
+                            coherente</strong> que incluya TODAS las palabras generadas por el combo lanzado.</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>💥 7. Efectos de Cartas Especiales</h3>
+                <ul class="rule-list">
+                    <li>⛔ <strong>Cancelar Turno (Skip / Prohibido):</strong> Cancela de inmediato el turno del grupo
+                        siguiente según el sentido de juego.</li>
+                    <li>🔄 <strong>Cambio de Sentido (Reverse / Flecha doble):</strong> Además de invertir la dirección
+                        de la partida, sirve como escudo: se puede usar para <strong>devolverle el ataque directamente
+                            al equipo que lo lanzó</strong>, incluyendo la carta de <em>Cancelar Turno</em>.</li>
+                    <li>🔁 <strong>Bucle de Rebote (Counter Arrow / Flechas en bucle):</strong> <strong>¡Efecto Papa
+                            Caliente!</strong> Traslada el efecto negativo al siguiente equipo sin cambiar el sentido
+                        del juego. El equipo que lanza esta carta se salva y finaliza su turno, pasando el castigo al
+                        próximo grupo hasta que alguien no pueda defenderse.</li>
+                    <li>➕ <strong>Sumatoria de Color (+2, +4):</strong> Indica la cantidad de integrantes del equipo
+                        defensor que deberán responder desafíos individuales de forma consecutiva (incluyendo al
+                        representante). Si al menos uno falla, el equipo pierde 1 HP.</li>
+                    <li>🌈 <strong>Sumatoria sin Color (Wild Draw):</strong> Mantiene el efecto de respuesta múltiple
+                        por integrantes, pero exige obligatoriamente colocar una carta de color encima para definir la
+                        categoría gramatical.</li>
+                    <li>🃏 <strong>Carta de Acumulación (Discard All / Mano con Baraja):</strong> Funciona como en el
+                        UNO Mercy tradicional. Al jugarla, permite al equipo atacante desechar de su mano <strong>todas
+                            las cartas que tenga del mismo color</strong> que la Carta de Acumulación lanzada. Esta
+                        jugada es clave para vaciar la mano rápidamente y buscar la victoria por la vía clásica del
+                        "UNO".</li>
+                    <li>🎭 <strong>Sad Faces Wild (Rostros Tristes):</strong> El jugador que lanza esta carta debe
+                        elegir y decir un color en voz alta (no se coloca ninguna carta encima de ella). El equipo
+                        afectado debe <strong>robar cartas de la baraja una por una hasta que le salga una carta de
+                            dicho color</strong>. Al obtenerla, debe colocarla en la mesa. Finalmente, el representante
+                        deberá generar una oración utilizando TODAS las palabras de las <strong>cartas numéricas (según
+                            sus respectivos colores) que haya tenido que robar en el proceso</strong>.</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>⚖️ 8. Pauta de Puntuación y Control</h3>
+                <ul class="rule-list">
+                    <li>⏱️ <strong>Tiempo Límite:</strong> Cada estudiante tiene un máximo de <strong>30
+                            segundos</strong> para formular en voz alta su oración en inglés una vez generadas las
+                        palabras.</li>
+                    <li>👨‍🏫 <strong>Criterio del Juez:</strong> El docente actúa como único árbitro para validar la
+                        inteligibilidad, correcta pronunciación y precisión gramatical de cada oración.</li>
+                </ul>
+            </div>
+
+            <div class="rule-section">
+                <h3>🛑 9. Aclaraciones Finales: La Regla de "¡UNO!"</h3>
+                <p>Para mantener la esencia y tensión del juego clásico, la condición de victoria por vaciar la mano es
+                    sumamente estricta:</p>
+                <ul class="rule-list">
+                    <li><strong>Es obligatorio decir "¡UNO!":</strong> Un equipo <strong>no puede ganar la
+                            partida</strong> sin haber anunciado explícitamente "¡UNO!" en el momento en que se quedó
+                        con exactamente una sola carta en la mano.</li>
+                    <li><strong>Jugadas no válidas para ganar de golpe:</strong> Debido a la regla anterior, está
+                        prohibido ganar vaciando la mano de forma sorpresiva. No se puede ganar realizando una jugada
+                        combinada masiva (tirando escaleras o pares que te dejen sin cartas de un solo golpe), ni
+                        arrojando una carta negra y realizando otra jugada continua que te deje sin cartas, ya que estas
+                        acciones evaden la obligación de tener una sola carta y decir "¡UNO!" previamente.</li>
+                </ul>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button onclick="closeRules()"
+                    style="background: var(--yellow); color: #000; padding: 10px 30px; font-size: 16px;">¡Entendido y
+                    Listo para Jugar!</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const wordDictionary = {
+            blue: ["faster", "taller", "more expensive", "easier", "colder", "better", "smarter", "bigger", "more beautiful", "stronger"],
+            red: ["the fastest", "the tallest", "the most expensive", "the easiest", "the coldest", "the best", "the smartest", "the biggest", "the most beautiful", "the strongest"],
+            yellow: ["bought", "swimming", "travel", "decided", "speak", "running", "played", "eating", "wrote", "will go"],
+            green: ["because", "however", "always", "usually", "although", "therefore", "never", "sometimes", "moreover", "besides"]
+        };
+
+        let teams = [];
+        const maxHearts = 5;
+        let counts = { blue: 0, red: 0, yellow: 0, green: 0 };
+
+        function generateTeamInputs() {
+            const num = document.getElementById('num-teams').value;
+            const container = document.getElementById('team-inputs-container');
+            container.innerHTML = '';
+            for (let i = 1; i <= num; i++) {
+                container.innerHTML += `
+                    <div class="team-setup-card">
+                        <label><strong>Nombre del Equipo ${i}:</strong></label>
+                        <input type="text" id="team-name-${i}" value="Equipo ${i}">
+                        <br><br>
+                        <label>Participantes (Uno por línea):</label>
+                        <textarea id="team-players-${i}" placeholder="Juan
+María
+Carlos..."></textarea>
+                    </div>
+                `;
+            }
+            document.getElementById('step-1').style.display = 'none';
+            document.getElementById('step-2').style.display = 'block';
+        }
+
+        function startGame() {
+            const num = document.getElementById('num-teams').value;
+            teams = [];
+            for (let i = 1; i <= num; i++) {
+                const name = document.getElementById(`team-name-${i}`).value || `Equipo ${i}`;
+                const playersRaw = document.getElementById(`team-players-${i}`).value;
+                const playersList = playersRaw.split(/\r?\n/).map(p => p.trim()).filter(p => p !== '');
+
+                if (playersList.length === 0) {
+                    alert(`El ${name} no tiene participantes.`);
+                    return;
+                }
+                teams.push({ name: name, players: playersList, hp: maxHearts, currentPlayerIndex: 0 });
+            }
+            document.getElementById('setup-section').style.display = 'none';
+            document.getElementById('subtitle').style.display = 'none';
+            document.getElementById('game-section').style.display = 'block';
+            renderTeams();
+        }
+
+        // Sonido de daño clásico de Steve (Minecraft)
+        const steveHurtAudio = new Audio('steve_hurt.mp3');
+        const steveHurtOgg = new Audio('steve_hurt.ogg');
+
+        function playSteveHurtSound() {
+            try {
+                const sound = steveHurtAudio.cloneNode();
+                sound.volume = 0.9;
+                const playPromise = sound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(() => {
+                        const oggSound = steveHurtOgg.cloneNode();
+                        oggSound.volume = 0.9;
+                        oggSound.play().catch(e => console.log('Audio playback prevented:', e));
+                    });
+                }
+            } catch (err) {
+                console.warn('Error al reproducir sonido de Steve:', err);
+            }
+        }
+
+        function renderTeams() {
+            const container = document.getElementById('teams-container');
+            container.innerHTML = '';
+            teams.forEach((team, teamIndex) => {
+                let heartsHtml = '';
+                for (let h = 1; h <= maxHearts; h++) {
+                    if (h <= team.hp) heartsHtml += `<span onclick="toggleHeart(${teamIndex}, ${h}, 'remove')">❤️</span>`;
+                    else heartsHtml += `<span onclick="toggleHeart(${teamIndex}, ${h}, 'add')">🖤</span>`;
+                }
+                const currentPlayer = team.players[team.currentPlayerIndex];
+                container.innerHTML += `
+                    <div class="team-card" id="team-card-${teamIndex}">
+                        <div class="team-name">${team.name}</div>
+                        <div class="hearts">${heartsHtml}</div>
+                        <div class="current-player">👤 ${currentPlayer}</div>
+                    </div>
+                `;
+            });
+        }
+
+        function toggleHeart(teamIndex, heartPosition, action) {
+            if (action === 'remove' && teams[teamIndex].hp > 0) {
+                teams[teamIndex].hp--;
+                playSteveHurtSound();
+                renderTeams();
+                const card = document.getElementById(`team-card-${teamIndex}`);
+                if (card) {
+                    card.classList.add('damage-hit');
+                    setTimeout(() => card.classList.remove('damage-hit'), 400);
+                }
+                return;
+            }
+            else if (action === 'add' && teams[teamIndex].hp < maxHearts) {
+                teams[teamIndex].hp++;
+            }
+            renderTeams();
+        }
+
+        function nextRound() {
+            teams.forEach(team => {
+                team.currentPlayerIndex = (team.currentPlayerIndex + 1) % team.players.length;
+            });
+            renderTeams();
+            document.getElementById('roulette-area').innerHTML = '';
+            resetCounts();
+        }
+
+        function updateCount(color, change) {
+            counts[color] += change;
+            if (counts[color] < 0) counts[color] = 0;
+            if (counts[color] > 4) counts[color] = 4;
+            document.getElementById(`count-${color}`).innerText = counts[color];
+        }
+
+        function resetCounts() {
+            counts = { blue: 0, red: 0, yellow: 0, green: 0 };
+            ['blue', 'red', 'yellow', 'green'].forEach(c => document.getElementById(`count-${c}`).innerText = "0");
+        }
+
+        function spinComboRoulette() {
+            const colorsToGenerate = [];
+            if (counts.blue > 0) for (let i = 0; i < counts.blue; i++) colorsToGenerate.push('blue');
+            if (counts.red > 0) for (let i = 0; i < counts.red; i++) colorsToGenerate.push('red');
+            if (counts.yellow > 0) for (let i = 0; i < counts.yellow; i++) colorsToGenerate.push('yellow');
+            if (counts.green > 0) for (let i = 0; i < counts.green; i++) colorsToGenerate.push('green');
+
+            if (colorsToGenerate.length === 0) {
+                alert("Selecciona al menos 1 palabra sumando en los contadores.");
+                return;
+            }
+
+            const area = document.getElementById('roulette-area');
+            area.innerHTML = '';
+            const displays = [];
+
+            colorsToGenerate.forEach(color => {
+                const box = document.createElement('div');
+                box.className = 'word-display';
+                box.innerText = "???";
+                box.style.borderBottom = `6px solid var(--${color})`;
+                box.dataset.color = color;
+                area.appendChild(box);
+                displays.push(box);
+            });
+
+            let ticks = 0;
+            const interval = setInterval(() => {
+                displays.forEach(box => {
+                    const c = box.dataset.color;
+                    const dict = wordDictionary[c];
+                    box.innerText = dict[Math.floor(Math.random() * dict.length)];
+                });
+
+                ticks++;
+                if (ticks >= 15) {
+                    clearInterval(interval);
+                    let usedWords = { blue: [], red: [], yellow: [], green: [] };
+                    displays.forEach(box => {
+                        const c = box.dataset.color;
+                        let availableDict = wordDictionary[c].filter(w => !usedWords[c].includes(w));
+                        if (availableDict.length === 0) availableDict = wordDictionary[c];
+
+                        const finalWord = availableDict[Math.floor(Math.random() * availableDict.length)];
+                        usedWords[c].push(finalWord);
+                        box.innerText = finalWord;
+                    });
+                }
+            }, 100);
+        }
+
+        /* MODAL LOGIC */
+        function openRules() {
+            document.getElementById('rules-modal').style.display = 'block';
+        }
+        function closeRules() {
+            document.getElementById('rules-modal').style.display = 'none';
+        }
+        window.onclick = function (event) {
+            const modal = document.getElementById('rules-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+
+</html>
