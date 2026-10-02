@@ -275,6 +275,42 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
         }
 
+        #timer-display {
+            display: none;
+            margin-top: 20px;
+            font-size: 48px;
+            font-weight: bold;
+            font-variant-numeric: tabular-nums;
+            color: #fff;
+            background: #111;
+            padding: 10px 30px;
+            border-radius: 12px;
+            border: 3px solid #444;
+        }
+
+        #timer-display.warning {
+            color: var(--yellow);
+            border-color: var(--yellow);
+        }
+
+        #timer-display.danger {
+            color: #ff5252;
+            border-color: #ff5252;
+            animation: timerPulse 1s ease-in-out infinite;
+        }
+
+        #timer-display.finished {
+            color: #fff;
+            background: var(--red);
+            border-color: var(--red);
+        }
+
+        @keyframes timerPulse {
+            50% {
+                transform: scale(1.06);
+            }
+        }
+
         /* FLOATING BUTTONS */
         #rules-btn {
             position: fixed;
@@ -458,6 +494,7 @@
 
             <button id="btn-generate" onclick="spinComboRoulette()">🎲 Generar Palabras</button>
             <div id="roulette-area"></div>
+            <div id="timer-display"></div>
         </div>
 
         <button id="rules-btn" onclick="openRules()">📜 Reglas del Juego</button>
@@ -600,9 +637,10 @@
             <div class="rule-section">
                 <h3>⚖️ 8. Pauta de Puntuación y Control</h3>
                 <ul class="rule-list">
-                    <li>⏱️ <strong>Tiempo Límite:</strong> Cada estudiante tiene un máximo de <strong>30
-                            segundos</strong> para formular en voz alta su oración en inglés una vez generadas las
-                        palabras.</li>
+                    <li>⏱️ <strong>Tiempo Límite:</strong> Cada estudiante tiene un tiempo máximo para formular en voz
+                        alta su oración en inglés, que depende de cuántas palabras se generen: <strong>45
+                            segundos</strong> para 3 palabras o menos, <strong>1 minuto</strong> para 4 o 5 palabras
+                        y <strong>1 minuto 15 segundos</strong> para más de 5 palabras.</li>
                     <li>👨‍🏫 <strong>Criterio del Juez:</strong> El docente actúa como único árbitro para validar la
                         inteligibilidad, correcta pronunciación y precisión gramatical de cada oración.</li>
                 </ul>
@@ -751,6 +789,55 @@ Carlos..."></textarea>
             renderTeams();
             document.getElementById('roulette-area').innerHTML = '';
             resetCounts();
+            stopTimer();
+        }
+
+        /* CRONÓMETRO */
+        let timerInterval = null;
+
+        function getTimeForWords(wordCount) {
+            if (wordCount <= 3) return 45;
+            if (wordCount <= 5) return 60;
+            return 75;
+        }
+
+        function formatTime(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return `${m}:${String(s).padStart(2, '0')}`;
+        }
+
+        function startTimer(totalSeconds) {
+            stopTimer();
+            const display = document.getElementById('timer-display');
+            const endTime = Date.now() + totalSeconds * 1000;
+            display.style.display = 'inline-block';
+
+            const tick = () => {
+                const remaining = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
+                display.className = '';
+                if (remaining === 0) {
+                    display.innerText = '⏰ ¡TIEMPO!';
+                    display.className = 'finished';
+                    clearInterval(timerInterval);
+                    timerInterval = null;
+                    return;
+                }
+                display.innerText = `⏱️ ${formatTime(remaining)}`;
+                if (remaining <= 5) display.className = 'danger';
+                else if (remaining <= 10) display.className = 'warning';
+            };
+
+            tick();
+            timerInterval = setInterval(tick, 250);
+        }
+
+        function stopTimer() {
+            clearInterval(timerInterval);
+            timerInterval = null;
+            const display = document.getElementById('timer-display');
+            display.style.display = 'none';
+            display.className = '';
         }
 
         function updateCount(color, change) {
@@ -776,6 +863,8 @@ Carlos..."></textarea>
                 alert("Selecciona al menos 1 palabra sumando en los contadores.");
                 return;
             }
+
+            stopTimer();
 
             const area = document.getElementById('roulette-area');
             area.innerHTML = '';
@@ -812,6 +901,7 @@ Carlos..."></textarea>
                         usedWords[c].push(finalWord);
                         box.innerText = finalWord;
                     });
+                    startTimer(getTimeForWords(displays.length));
                 }
             }, 100);
         }
